@@ -19,8 +19,7 @@ const siteList = fs
   .readFileSync("sitelist.txt")
   .toString()
   .split("\n")
-  .map((site) => site.trim())
-  .slice(0, 3);
+  .map((site) => site.trim());
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
@@ -62,11 +61,15 @@ async function autoScroll(page) {
     }
 
     let failed = false;
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
     const page = await browser.newPage();
     try {
       console.log(`Processing ${siteList[site]}, ${filename}`);
 
+      await page.setDefaultNavigationTimeout(60000);
       await page.setViewport({
         width: 1920,
         height: 1080,
@@ -77,7 +80,6 @@ async function autoScroll(page) {
       );
 
       await page.goto(siteList[site]);
-      await page.setDefaultNavigationTimeout(60000);
       // await page.waitForTimeout(30000);
       await autoScroll(page);
 
