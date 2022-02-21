@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "filenamify-url": "^3.0.0",
+    "filenamify": "^5.1.0",
     "fs-extra": "^10.0.0",
-    "pageres": "^6.3.0"
+    "puppeteer": "^13.3.2"
   }
 }
