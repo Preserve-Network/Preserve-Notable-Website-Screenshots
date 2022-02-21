@@ -9,6 +9,7 @@ import puppeteer from "puppeteer";
 
 const date = new Date().toUTCString();
 const deleteFiles = false;
+const network = "mainnet";
 
 const siteList = fs
   .readFileSync("sitelist.txt")
@@ -86,10 +87,11 @@ async function autoScroll(page) {
   }
 
   const runTime = new Date() - startTime;
-  console.log(`Finished generating screenshots in ${runTime} ms`);
 
+  console.log(`Finished generating screenshots in ${runTime} ms`);
   console.log("Preserving to blockhain");
-  const preserve = new Preserve();
+
+  const preserve = new Preserve(network);
   const hash = await preserve.preserveFiles({
     name: `Website Screenshots ${date}`,
     description: "Website screenshots taken " + date,
