@@ -6,20 +6,25 @@ import filenamifyUrl from "filenamify/browser";
 
 import fsextra from "fs-extra";
 import puppeteer from "puppeteer";
+import minimist from "minimist";
+
+const argv = minimist(process.argv.slice(2));
 
 const date = new Date().toUTCString();
 
-const indexFiles = false;
-const deleteFiles = false;
-
-const network = "mumbai";
-const dataDir = "./data";
+// TODO we should validate this input
+const network = argv["network"] || "mumbai";
+const dataDir = argv["dataDir"] || "./data";
+const indexFiles = argv["indexFiles"] || false;
+const deleteFiles = argv["deleteFiles"] || false;
 
 const siteList = fs
   .readFileSync("sitelist.txt")
   .toString()
   .split("\n")
   .map((site) => site.trim());
+
+console.log(network, dataDir, indexFiles, deleteFiles);
 
 async function autoScroll(page) {
   await page.evaluate(async () => {

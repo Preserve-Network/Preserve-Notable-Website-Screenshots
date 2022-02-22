@@ -12,6 +12,7 @@
   "dependencies": {
     "filenamify": "^5.1.0",
     "fs-extra": "^10.0.0",
+    "minimist": "^1.2.5",
     "puppeteer": "^13.3.2"
   }
 }
