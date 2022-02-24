@@ -12,4 +12,6 @@ To run successfully, the accounts that you have set for the network must have en
 
 To deploy on the mainset you'll need the following env variables set and the preserve smart contract deployed to the mainnet. See https://github.com/Preserve-Network/Preserve-Framework for instructions on how to do that.
 
-node .\index.js --network mainnet --indexFiles --deleteFiles
+node .\index.js --network mainnet --indexFiles false --deleteFiles false --siteCount 2
+
+siteCount 2
