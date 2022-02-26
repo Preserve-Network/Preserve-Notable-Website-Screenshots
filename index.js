@@ -1,6 +1,5 @@
 import url from "url";
 import fs from "fs";
-
 import Preserve from "../preserve/index.js";
 import filenamifyUrl from "filenamify/browser";
 
@@ -32,20 +31,21 @@ console.log(network, dataDir, indexFiles, deleteFiles, siteCount, cid);
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
+    var waitTime = 100;
     await new Promise((resolve, reject) => {
       var totalHeight = 0;
       var distance = 100;
+      var totalTime = 0;
       var timer = setInterval(() => {
         var scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
         totalHeight += distance;
-
-        if (totalHeight >= scrollHeight) {
+        totalTime += waitTime;
+        if (totalHeight >= scrollHeight || totalTime > 60000) {
           clearInterval(timer);
-          window.scrollTo(0, 0);
           resolve();
         }
-      }, 100);
+      }, waitTime);
     });
   });
 }
@@ -72,24 +72,27 @@ async function autoScroll(page) {
       }
 
       let failed = false;
+      const isWin = process.platform === "win32";
+      const args = isWin ? [] : ["--no-sandbox", "--disable-setuid-sandbox"];
+
       const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true,
+        args,
       });
 
       const page = await browser.newPage();
       try {
         console.log(`Processing ${siteList[site]}, ${filename}`);
 
-        await page.setDefaultNavigationTimeout(60000);
-        await page.setViewport({
-          width: 1366,
-          height: 768,
-          deviceScaleFactor: 1,
-        });
+        await page.setDefaultNavigationTimeout(120000);
         await page.setUserAgent(
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
         );
-
+        await page.setViewport({
+          width: 1440,
+          height: 900,
+          deviceScaleFactor: 1,
+        });
         await page.goto(siteList[site]);
         await autoScroll(page);
 
@@ -98,19 +101,23 @@ async function autoScroll(page) {
           quality: 90,
           path: fullPath,
           fullPage: true,
+          captureBeyondViewport: false,
         });
 
         filenames.push(fullPath);
         console.log(
           ` Processed ${siteList[site]} in ${new Date() - startTime} ms`
         );
+        await browser.close();
       } catch (e) {
         console.error(`Failed to process ${siteList[site]} -- ${e}`);
         failed = true;
       } finally {
-        await browser.close();
+        console.log("Finally?");
+        await browser?.close();
       }
     }
+    console.log("End");
   }
 
   const runTime = new Date() - startTime;

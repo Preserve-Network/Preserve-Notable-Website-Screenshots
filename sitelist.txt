@@ -11,7 +11,6 @@ https://usatoday.com
 https://abcnews.go.com
 https://bloomberg.com
 https://nbcnews.com
-https://dailymail.co.uk
 https://theguardian.com
 https://thesun.co.uk
 https://bbc.com
@@ -24,7 +23,6 @@ https://cbsnews.com
 https://aljazeera.com
 https://hollywoodreporter.com
 https://bangkokpost.com
-https://dailysun.co.za
 https://thejakartapost.com
 https://theatlantic.com
 https://thedailybeast.com
