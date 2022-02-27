@@ -60,18 +60,18 @@ async function autoScroll(page) {
 
   /* If a cid was passed in we can skip all of this */
   if (!cid) {
+    const isWin = process.platform === "win32";
+    const args = isWin ? [] : ["--no-sandbox", "--disable-setuid-sandbox"];
+    const browser = await puppeteer.launch({
+      headless: true,
+      args,
+    });
+    const page = await browser.newPage();
+
     for (const site in siteList.slice(0, siteCount)) {
       let failed = false;
-      const isWin = process.platform === "win32";
-      const args = isWin ? [] : ["--no-sandbox", "--disable-setuid-sandbox"];
 
-      const browser = await puppeteer.launch({
-        headless: true,
-        args,
-      });
-
-      const page = await browser.newPage();
-      const showStartTime = new Date();
+      const shotStartTime = new Date();
 
       try {
         const myURL = new URL(siteList[site]).host;
@@ -108,17 +108,18 @@ async function autoScroll(page) {
 
         filenames.push(fullPath);
         console.log(
-          `   Completed ${siteList[site]} in ${new Date() - showStartTime} ms`
+          `   Completed ${siteList[site]} in ${new Date() - shotStartTime} ms`
         );
-        await browser.close();
       } catch (e) {
         console.error(`Failed to process ${siteList[site]} -- ${e}`);
         failed = true;
         continue;
       } finally {
-        if (browser) await browser.close();
+        // if (browser) await browser.close();
       }
     }
+
+    await browser.close();
     console.log("Finished");
   }
 
