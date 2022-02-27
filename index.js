@@ -6,10 +6,18 @@ import filenamifyUrl from "filenamify/browser";
 import fsextra from "fs-extra";
 import puppeteer from "puppeteer";
 import minimist from "minimist";
+import mysql from "mysql";
+import dotenv from "dotenv";
+dotenv.config();
 
 const argv = minimist(process.argv.slice(2));
 
 const date = new Date().toUTCString();
+
+const mysql_user = process.env.MYSQL_USER;
+const mysql_password = process.env.MYSQL_PASSWORD;
+const mysql_database = "preserve";
+const mysql_table = "snapshots";
 
 // TODO we should validate this input
 const network = argv["network"] || "mumbai";
@@ -18,16 +26,6 @@ const indexFiles = argv["indexFiles"] === "true" || false;
 const deleteFiles = argv["deleteFiles"] === "true" || false;
 const siteCountArg = argv["siteCount"];
 const cid = argv["cid"];
-
-const siteList = fs
-  .readFileSync("sitelist.txt")
-  .toString()
-  .split("\n")
-  .map((site) => site.trim());
-
-const siteCount = siteCountArg ? parseInt(siteCountArg) : siteList.length;
-
-console.log(network, dataDir, indexFiles, deleteFiles, siteCount, cid);
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
@@ -50,9 +48,36 @@ async function autoScroll(page) {
   });
 }
 
+const getSiteList = (connection) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `select url from ${mysql_database}.sitelist`,
+      [],
+      function (error, results, fields) {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results.map((row) => row.url));
+      }
+    );
+  });
+};
+
 (async () => {
   const startTime = new Date();
   const filenames = [];
+  const connection = mysql.createConnection({
+    host: "localhost",
+    user: mysql_user,
+    password: mysql_password,
+    database: mysql_database,
+  });
+  connection.connect();
+
+  const siteList = await getSiteList(connection);
+  const siteCount = siteCountArg ? parseInt(siteCountArg) : siteList.length;
+
+  console.log(network, dataDir, indexFiles, deleteFiles, siteCount, cid);
 
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir);
@@ -147,4 +172,5 @@ async function autoScroll(page) {
   if (deleteFiles) {
     await fsextra.emptyDir(dataDir);
   }
+  process.exit();
 })();
