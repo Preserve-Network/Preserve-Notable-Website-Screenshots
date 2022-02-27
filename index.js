@@ -61,16 +61,6 @@ async function autoScroll(page) {
   /* If a cid was passed in we can skip all of this */
   if (!cid) {
     for (const site in siteList.slice(0, siteCount)) {
-      const myURL = new URL(siteList[site]).host;
-      const filename = `${filenamifyUrl(myURL)}`;
-      const fullPath = `${dataDir}/${filename}.jpg`;
-
-      if (fs.existsSync(fullPath)) {
-        console.log(`Exists ${filename}`);
-        filenames.push(fullPath);
-        continue;
-      }
-
       let failed = false;
       const isWin = process.platform === "win32";
       const args = isWin ? [] : ["--no-sandbox", "--disable-setuid-sandbox"];
@@ -81,7 +71,19 @@ async function autoScroll(page) {
       });
 
       const page = await browser.newPage();
+      const showStartTime = new Date();
+
       try {
+        const myURL = new URL(siteList[site]).host;
+        const filename = `${filenamifyUrl(myURL)}`;
+        const fullPath = `${dataDir}/${filename}.jpg`;
+
+        if (fs.existsSync(fullPath)) {
+          console.log(`Exists ${filename}`);
+          filenames.push(fullPath);
+          continue;
+        }
+
         console.log(`Processing ${siteList[site]}, ${filename}`);
 
         await page.setDefaultNavigationTimeout(120000);
@@ -106,18 +108,18 @@ async function autoScroll(page) {
 
         filenames.push(fullPath);
         console.log(
-          ` Processed ${siteList[site]} in ${new Date() - startTime} ms`
+          `   Completed ${siteList[site]} in ${new Date() - showStartTime} ms`
         );
         await browser.close();
       } catch (e) {
         console.error(`Failed to process ${siteList[site]} -- ${e}`);
         failed = true;
+        continue;
       } finally {
-        console.log("Finally?");
-        await browser?.close();
+        if (browser) await browser.close();
       }
     }
-    console.log("End");
+    console.log("Finished");
   }
 
   const runTime = new Date() - startTime;
